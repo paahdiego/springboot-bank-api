@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.patch
-import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.*
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -110,7 +107,6 @@ class BankControllerTest @Autowired constructor(
         @Test
         fun `should update existing bank`() {
 
-
             val bankUpdate = Bank("123", 2.0, 5)
 
             val response = mockMvc.patch(baseUrl) {
@@ -133,5 +129,34 @@ class BankControllerTest @Autowired constructor(
                 }
             }
         }
+
+        @Test
+        fun `should return a BAD REQUEST if no bank with given account number exists`() {
+            val bankUpdate = Bank("75483", 2.0, 5)
+
+            val response = mockMvc.patch(baseUrl) {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(bankUpdate)
+            }
+
+            response.andDo { print() }.andExpect {
+                status { isNotFound() }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("DELETE /api/bank")
+    @TestInstance(Lifecycle.PER_CLASS)
+    inner class DeleteExistingBank {
+        @Test
+        fun `should delete the bank with the given account number`() {
+            val accountNumber = 1234
+
+            mockMvc.delete("$baseUrl/$accountNumber").andDo { print() }.andExpect { status { isNoContent() } }
+
+            mockMvc.get("$baseUrl/$accountNumber").andExpect { status { isNotFound() } }
+        }
+
     }
 }

@@ -36,4 +36,8 @@ class MockBankDataSource : BankDataSource {
         return bank
     }
 
+    override fun deleteBank(accountNumber: String) {
+        banks.removeAll { it.accountNumber == accountNumber }
+    }
+
 }
